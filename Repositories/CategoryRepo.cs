@@ -75,16 +75,21 @@ namespace E_CommerceSystem.Repositories
         }
 
         //Delete Category
-        //public void DeleteCategory(int cid)
-        //{
-        //    try
-        //    {
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new InvalidOperationException($"Database error: {ex.Message}");
-        //    }
-        //}
+        public void DeleteCategory(int cid)
+        {
+            try
+            {
+                var category = GetCategoryById(cid);
+                if (category != null)
+                {
+                    _context.Categories.Remove(category);
+                    _context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Database error: {ex.Message}");
+            }
+        }
     }
 }
