@@ -1,7 +1,7 @@
-﻿using E_CommerceSystem.Models;
+﻿using AutoMapper;
+using E_CommerceSystem.Models;
 using E_CommerceSystem.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -14,12 +14,15 @@ namespace E_CommerceSystem.Controllers
     {
         private readonly IReviewService _reviewService;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
 
-        public ReviewController(IReviewService reviewService, IConfiguration configuration)
+        public ReviewController(IReviewService reviewService, IConfiguration configuration, IMapper mapper)
         {
             _reviewService = reviewService;
             _configuration = configuration;
+            _mapper = mapper;
         }
+
         [HttpPost("AddReview")]
         public IActionResult AddReview(int pid, ReviewDTO review)
         {
@@ -48,9 +51,9 @@ namespace E_CommerceSystem.Controllers
         [AllowAnonymous]
         [HttpGet("GetAllReviews")]
         public IActionResult GetAllReviews(
-        [FromQuery] int productId,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10)
+            [FromQuery] int productId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
         {
             try
             {
@@ -61,21 +64,16 @@ namespace E_CommerceSystem.Controllers
                 }
 
                 // Call the service to get the paged and filtered products
-                var reviews = _reviewService.GetAllReviews(pageNumber, pageSize,productId);
+                var reviews = _reviewService.GetAllReviews(pageNumber, pageSize, productId);
 
                 if (reviews == null || !reviews.Any())
                 {
                     return NotFound("No Reviews found matching the given product id.");
                 }
 
-                List<ReviewDTO> reviewOutputList = new List<ReviewDTO>();
-                var reviewOutput = new ReviewDTO();
-                foreach (var review in reviews)
-                {
-                    reviewOutput.Rating = review.Rating;
-                    reviewOutput.Comment = review.Comment;
-                    reviewOutputList.Add(reviewOutput);
-                }
+                // AutoMapper Review -> ReviewDTO ...
+                var reviewOutputList = _mapper.Map<IEnumerable<ReviewDTO>>(reviews);
+
                 return Ok(reviewOutputList);
             }
             catch (Exception ex)
@@ -91,7 +89,7 @@ namespace E_CommerceSystem.Controllers
 
             try
             {
-                var review = _reviewService.GetReviewById(ReviewId); 
+                var review = _reviewService.GetReviewById(ReviewId);
                 if (review == null)
                     return NotFound($"Review with ID {ReviewId} not found.");
 
@@ -104,7 +102,7 @@ namespace E_CommerceSystem.Controllers
                 // Extract user ID 
                 int uid = int.Parse(userId);
 
-                if(review.UID == uid)
+                if (review.UID == uid)
                 {
                     _reviewService.DeleteReview(ReviewId);
 
@@ -144,7 +142,7 @@ namespace E_CommerceSystem.Controllers
                 int uid = int.Parse(userId);
 
                 //update review
-                if(review.UID == uid)
+                if (review.UID == uid)
                 {
                     _reviewService.UpdateReview(ReviewId, reviewDTO);
                     return Ok($"Review whith ReviewId {ReviewId} updated successfully.");
@@ -159,6 +157,7 @@ namespace E_CommerceSystem.Controllers
 
             }
         }
+
         private string? GetUserIdFromToken(string token)
         {
             var handler = new JwtSecurityTokenHandler();
@@ -170,13 +169,10 @@ namespace E_CommerceSystem.Controllers
                 // Extract the 'sub' claim
                 var subClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub");
 
-
                 return (subClaim?.Value); // Return both values as a tuple
             }
 
             throw new UnauthorizedAccessException("Invalid or unreadable token.");
         }
     }
-
-    
 }
