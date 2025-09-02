@@ -33,6 +33,11 @@ namespace E_CommerceSystem
             builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
             builder.Services.AddScoped<IReviewService, ReviewService>();
 
+            //register category ...
+            builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
+            //register supplier ...
+            builder.Services.AddScoped<ISupplierRepo, SupplierRepo>();
+
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                  options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
