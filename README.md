@@ -10,7 +10,7 @@
 
 ### Models
 
-- User
+- **User**
 ```CSharp
     public class User
     {
@@ -27,7 +27,7 @@
         public virtual ICollection<Review> Reviews { get; set; }
     }
 ```
-- Order
+- **Order**
 ```CSharp
     public class Order
     {
@@ -41,7 +41,7 @@
         public virtual ICollection<OrderProducts> OrderProducts { get; set; }
     }
 ```
-- Product
+- **Product**
 ```CSharp
     public class Product
     {
@@ -57,7 +57,7 @@
         public virtual ICollection<OrderProducts> OrderProducts { get; set; }
     }
 ```
-- Review
+- **Review**
 ```CSharp
     public class Review
     {
@@ -73,7 +73,7 @@
         public virtual User User { get; set; }
     }
 ```
-- OrderProducts
+- **OrderProducts**
 ```CSharp
     public class OrderProducts
     {
@@ -86,31 +86,149 @@
         public virtual Product Product { get; set; }
     }
 ```
+
+~~NOTE:~~ Every model class includes necessary data annotations for validation and relationships.
+
 ### DbContext
+
+```CSharp
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        {
+        }
+
+        public DbSet<User> Users { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderProducts> OrderProducts { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>()
+                        .HasIndex(u => u.Email)
+                        .IsUnique();
+        }
+```
 ### Repositories
-- UserRepository
-- ProductRepository
-- OrderRepository
-- ReviewRepository
-- OrderProductsRepository
+
+- **UserRepository**
+
+- **ProductRepo**
+
+  It contain the following custom methods:
+  - void AddProduct(Product product)
+  - IEnumerable<Product> GetAllProducts()
+  - Product GetProductById(int pid)
+  - void UpdateProduct(Product product)
+  - Product GetProductByName(string productName)
+  It implement the following interface:
+  - IProductRepo
+
+- **OrderRepository**
+
+- **ReviewRepo**
+
+  It contain the following custom methods:
+  - void AddReview(Review review)
+  - void DeleteReview(int rid)
+  - IEnumerable<Review> GetAllReviews()
+  - Review GetReviewById(int rid)
+  - void UpdateReview(Review review)
+  - Review GetReviewsByProductIdAndUserId(int pid, int uid)
+  - IEnumerable<Review> GetReviewByProductId(int pid)
+  It implement the following interface:
+  - IReviewRepo
+  
+- **OrderProductsRepo**
+
+  It contain the following custom methods:
+  - void AddOrderProducts(OrderProducts product)
+  - IEnumerable<OrderProducts> GetAllOrders()
+  - List<OrderProducts> GetOrdersByOrderId(int oid)
+  It implement the following interface:
+  - IOrderProductsRepo
 
 ### Services
-- UserService
-- ProductService
-- OrderService
-- ReviewService
-- OrderProductsService
+- **UserService**
+
+- **ProductService**
+
+  It contain the following custom methods:
+  - void AddProduct(Product product)
+  - IEnumerable<Product> GetAllProducts(int pageNumber, int pageSize, string? name = null, decimal? minPrice = null, decimal? maxPrice = null)
+  - Product GetProductById(int pid)
+  - void UpdateProduct(Product product)
+  - Product GetProductByName(string productName)
+  It implement the following interface:
+  - IProductService
+
+- **OrderService**
+
+- **ReviewService**
+
+  It contain the following custom methods:
+  - void AddReview(int uid, int pid, ReviewDTO reviewDTO)
+  - void DeleteReview(int rid)
+  - IEnumerable<Review> GetAllReviews(int pageNumber, int pageSize, int pid)
+  - Review GetReviewById(int rid)
+  - IEnumerable<Review> GetReviewByProductId(int pid)
+  - Review GetReviewsByProductIdAndUserId(int pid, int uid)
+  - void UpdateReview(int rid, ReviewDTO reviewDTO)
+  It implement the following interface:
+  - IReviewService
+  
+- **OrderProductsService**
+
+  It contain the following custom methods:
+  - void AddOrderProducts(OrderProducts product)
+  - IEnumerable<OrderProducts> GetAllOrders()
+  - List<OrderProducts> GetOrdersByOrderId(int oid)
+  It implement the following interface:
+  - IOrderProductsService
 
 ### Controllers
-- UserController
-- ProductController
-- OrderController
-- ReviewController
+
+- **UserController**
+
+- **ProductController**
+
+  It contain the following custom endpoints:
+  - [HttpPost] /api/Product/AddProduct
+  - [HttpPut] /api/Product/UpdateProduct/{productId}
+  - [HttpGet] /api/Product/GetAllProducts
+  - [HttpGet] /api/Product/GetProductByID/{ProductId}
+  ~~NOTE:~~ This controller uses [Authorize] attribute to secure endpoints for all users except GetAllProducts and GetProductByID.
+  
+- **OrderController**
+
+- **ReviewController**
+
+  It contain the following custom endpoints:
+  - [HttpPost] /api/Review/AddReview
+  - [HttpGet] /api/Review/GetAllReviews
+  - [HttpDelete] /api/Review/DeleteReview/{ReviewId}
+  - [HttpPut] /api/Review/UpdateReview/{ReviewId}
+  ~~NOTE:~~ This controller uses [Authorize] attribute to secure endpoints for all users except GetAllReviews.
 
 
 ## System Features
 
 ### User Features
+
 ### Product Features
+
+1. **Add Product**: Admins can add new products to the system.
+2. **Update Product**: Admins can update existing product details.
+3. **View Products**: All users can view a list of products.
+4. **Search for Product by ID**: Users can search for products by id.
+5. **Search for Product by Name**: Users can search for products by name.
+
 ### Order Features
+
 ### Review Features
+
+1. **Add Review**: Authenticated users can add reviews for products they have purchased.
+2. **View Reviews on Product**: All users can view reviews for product.
+3. **Update Review**: Users can update their own reviews.
+4. **Delete Review**: Users can delete their own reviews.
+5. **View All Reviews**: All users can view reviews for products.
