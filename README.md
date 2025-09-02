@@ -121,6 +121,7 @@
   - Product GetProductById(int pid)
   - void UpdateProduct(Product product)
   - Product GetProductByName(string productName)
+  
   It implement the following interface:
   - IProductRepo
 
@@ -136,6 +137,7 @@
   - void UpdateReview(Review review)
   - Review GetReviewsByProductIdAndUserId(int pid, int uid)
   - IEnumerable<Review> GetReviewByProductId(int pid)
+  
   It implement the following interface:
   - IReviewRepo
   
@@ -145,6 +147,7 @@
   - void AddOrderProducts(OrderProducts product)
   - IEnumerable<OrderProducts> GetAllOrders()
   - List<OrderProducts> GetOrdersByOrderId(int oid)
+  
   It implement the following interface:
   - IOrderProductsRepo
 
@@ -159,6 +162,7 @@
   - Product GetProductById(int pid)
   - void UpdateProduct(Product product)
   - Product GetProductByName(string productName)
+  
   It implement the following interface:
   - IProductService
 
@@ -174,6 +178,7 @@
   - IEnumerable<Review> GetReviewByProductId(int pid)
   - Review GetReviewsByProductIdAndUserId(int pid, int uid)
   - void UpdateReview(int rid, ReviewDTO reviewDTO)
+  
   It implement the following interface:
   - IReviewService
   
@@ -183,6 +188,7 @@
   - void AddOrderProducts(OrderProducts product)
   - IEnumerable<OrderProducts> GetAllOrders()
   - List<OrderProducts> GetOrdersByOrderId(int oid)
+  
   It implement the following interface:
   - IOrderProductsService
 
