@@ -1,10 +1,6 @@
-﻿using E_CommerceSystem.Models;
+﻿using AutoMapper;
+using E_CommerceSystem.Models;
 using E_CommerceSystem.Repositories;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Security.Cryptography;
 
 namespace E_CommerceSystem.Services
 {
@@ -13,24 +9,28 @@ namespace E_CommerceSystem.Services
         private readonly IOrderRepo _orderRepo;
         private readonly IProductService _productService;
         private readonly IOrderProductsService _orderProductsService;
+        private readonly IMapper _mapper;
 
-        public OrderService(IOrderRepo orderRepo, IProductService productService, IOrderProductsService orderProductsService)
+        public OrderService(
+            IOrderRepo orderRepo,
+            IProductService productService,
+            IOrderProductsService orderProductsService,
+            IMapper mapper)
         {
             _orderRepo = orderRepo;
             _productService = productService;
             _orderProductsService = orderProductsService;
+            _mapper = mapper;
         }
 
-        //get all orders for login user
-        public List <OrderProducts> GetAllOrders(int uid)
+        // get all orders for login user ...
+        public List<OrderProducts> GetAllOrders(int uid)
         {
             var orders = _orderRepo.GetOrderByUserId(uid);
             if (orders == null || !orders.Any())
                 throw new InvalidOperationException($"No orders found for user ID {uid}.");
 
-            // Collect all OrderProducts for all orders
             var allOrderProducts = new List<OrderProducts>();
-
             foreach (var order in orders)
             {
                 var orderProducts = _orderProductsService.GetOrdersByOrderId(order.OID);
@@ -39,50 +39,36 @@ namespace E_CommerceSystem.Services
             }
 
             return allOrderProducts;
-
         }
 
-        //get order by order id for the login user
+        // get order by order id for the login user ...
         public IEnumerable<OrdersOutputOTD> GetOrderById(int oid, int uid)
         {
-            //list of items in the order 
-            List<OrdersOutputOTD> items = new List<OrdersOutputOTD>();
-            OrdersOutputOTD ordersOutputOTD = null;
-
-            
-            List<OrderProducts> products = null;
-            Product product = null;
-            string productName = string.Empty;
-
-            //get order 
             var order = _orderRepo.GetOrderById(oid);
-
             if (order == null)
-                throw new InvalidOperationException($"No orders found .");
+                throw new InvalidOperationException("No orders found.");
 
-            //execute the products data in existing Product
-            if (order.UID == uid)
+            if (order.UID != uid)
+                return Enumerable.Empty<OrdersOutputOTD>();
+
+            var products = _orderProductsService.GetOrdersByOrderId(oid);
+            var items = new List<OrdersOutputOTD>();
+
+            foreach (var op in products)
             {
-                products = _orderProductsService.GetOrdersByOrderId(oid);
-                foreach (var p in products)
-                {
-                    product = _productService.GetProductById(p.PID);
-                    productName = product.ProductName;
-                    ordersOutputOTD = new OrdersOutputOTD
-                    {
-                        ProductName = productName,
-                        Quantity = p.Quantity,
-                        OrderDate = order.OrderDate,
-                        TotalAmount = p.Quantity * product.Price,
-                    };
-                    items.Add(ordersOutputOTD);
-                }
-            }
-   
-            return items;
-     
-        }
+                // Ensure navigations are available for AutoMapper ...
+                var product = _productService.GetProductById(op.PID);
+                op.product = product;   // set navigation for mapping ...
+                op.Order = order;       // set navigation for mapping ...
 
+                // AutoMapper builds OrdersOutputOTD (OrderDate, ProductName, Quantity, TotalAmount) ...
+                var dto = _mapper.Map<OrdersOutputOTD>(op);
+                items.Add(dto);
+            }
+
+            return items;
+        }
+        // get all orders for a specific user by user id ...
         public IEnumerable<Order> GetOrderByUserId(int uid)
         {
             var order = _orderRepo.GetOrderByUserId(uid);
@@ -91,7 +77,7 @@ namespace E_CommerceSystem.Services
 
             return order;
         }
-
+        // delete order by order id ...
         public void DeleteOrder(int oid)
         {
             var order = _orderRepo.GetOrderById(oid);
@@ -101,68 +87,58 @@ namespace E_CommerceSystem.Services
             _orderRepo.DeleteOrder(oid);
             throw new Exception($"order with ID {oid} is deleted");
         }
+        // add new order ...
         public void AddOrder(Order order)
         {
             _orderRepo.AddOrder(order);
         }
+        // update existing order ...
         public void UpdateOrder(Order order)
         {
             _orderRepo.UpdateOrder(order);
         }
 
-        //Places an order for the given list of items and user ID.
-        public void PlaceOrder( List<OrderItemDTO> items, int uid)
+        // Places an order for the given list of items and user ID.
+        public void PlaceOrder(List<OrderItemDTO> items, int uid)
         {
-            // Temporary variable to hold the currently processed product
             Product existingProduct = null;
-            
-            decimal TotalPrice, totalOrderPrice = 0; // Variables to hold the total price of each item and the overall order
+            decimal totalOrderPrice = 0;
 
-            OrderProducts orderProducts = null;
-
-            // Validate all items in the order
-            for (int i = 0; i < items.Count; i++)
-            {
-                TotalPrice = 0;
-                existingProduct = _productService.GetProductByName(items[i].ProductName);
-                if (existingProduct == null)
-                    throw new Exception($"{items[i].ProductName} not Found");
-
-                if (existingProduct.Stock < items[i].Quantity)
-                    throw new Exception($"{items[i].ProductName} is out of stock");
-
-            }
-            // Create a new order for the user
-            var order = new Order { UID = uid, OrderDate = DateTime.Now, TotalAmount = 0 };
-            AddOrder(order); // Save the order to the database
-
-            // Process each item in the order
+            // Validate stock for each item first ...
             foreach (var item in items)
             {
-                // Retrieve the product by its name
-                existingProduct = _productService.GetProductByName(item.ProductName);
-               
-                // Calculate the total price for the current item
-                TotalPrice = item.Quantity * existingProduct.Price;
+                existingProduct = _productService.GetProductByName(item.ProductName)
+                    ?? throw new Exception($"{item.ProductName} not Found");
 
-                // Deduct the ordered quantity from the product's stock
-                existingProduct.Stock -= item.Quantity;
+                if (existingProduct.Stock < item.Quantity)
+                    throw new Exception($"{item.ProductName} is out of stock");
+            }
 
-                // Update the overall total order price
-                totalOrderPrice += TotalPrice;
+            // Create order
+            var order = new Order { UID = uid, OrderDate = DateTime.Now, TotalAmount = 0 };
+            AddOrder(order);
 
-                // Create a relationship record between the order and product
-                orderProducts = new OrderProducts {OID = order.OID, PID = existingProduct.PID, Quantity = item.Quantity  };
+            // Process items ...
+            foreach (var item in items)
+            {
+                existingProduct = _productService.GetProductByName(item.ProductName)!;
+
+                var totalPrice = item.Quantity * existingProduct.Price;// Calculate total price for this item ...
+                existingProduct.Stock -= item.Quantity;// Deduct stock ...
+                totalOrderPrice += totalPrice; // Accumulate to order total ...
+
+                // Use AutoMapper for the basic mapping, then enrich with FKs ...
+                var orderProducts = _mapper.Map<OrderProducts>(item);
+                orderProducts.OID = order.OID;
+                orderProducts.PID = existingProduct.PID;
+
                 _orderProductsService.AddOrderProducts(orderProducts);
-
-                // Update the product's stock in the database
                 _productService.UpdateProduct(existingProduct);
             }
 
-            // Update the total amount of the order
+            // Update order total
             order.TotalAmount = totalOrderPrice;
             UpdateOrder(order);
-
         }
     }
 }
