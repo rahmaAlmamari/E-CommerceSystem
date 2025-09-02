@@ -1,14 +1,17 @@
 ﻿using E_CommerceSystem.Models;
 using E_CommerceSystem.Repositories;
+using AutoMapper;
 
 namespace E_CommerceSystem.Services
 {
     public class OrderProductsService : IOrderProductsService
     {
         private readonly IOrderProductsRepo _orderProductsRepo;
-        public OrderProductsService(IOrderProductsRepo orderProductsRepo)
+        private readonly IMapper _mapper;
+        public OrderProductsService(IOrderProductsRepo orderProductsRepo, IMapper mapper)
         {
             _orderProductsRepo = orderProductsRepo;
+            _mapper = mapper;
         }
 
         public void AddOrderProducts(OrderProducts product)
