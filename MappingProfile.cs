@@ -7,49 +7,36 @@ namespace E_CommerceSystem
     {
         public MappingProfile()
         {
-            // User <-> UserDTO
+            // User <-> UserDTO ...
             CreateMap<User, UserDTO>().ReverseMap();
 
-            // Product <-> ProductDTO
+            // Product <-> ProductDTO ...
             CreateMap<Product, ProductDTO>().ReverseMap();
 
-            // Review <-> ReviewDTO
+            // Review <-> ReviewDTO ...
             CreateMap<Review, ReviewDTO>().ReverseMap();
 
-            // OrderProducts -> OrderItemDTO
+            // OrderProducts -> OrderItemDTO ...
             CreateMap<OrderProducts, OrderItemDTO>()
-                .ForMember(dest => dest.ProductName,
-                           opt => opt.MapFrom(src => src.product.ProductName))
-                .ForMember(dest => dest.Quantity,
-                           opt => opt.MapFrom(src => src.Quantity));
+                .ForMember(d => d.ProductName, o => o.MapFrom(s => s.product.ProductName))
+                .ForMember(d => d.Quantity, o => o.MapFrom(s => s.Quantity));
 
-            // OrderItemDTO -> OrderProducts ...
+            // OrderItemDTO -> OrderProducts (single definition) ...
             CreateMap<OrderItemDTO, OrderProducts>()
-                .ForMember(dest => dest.Quantity,
-                           opt => opt.MapFrom(src => src.Quantity))
-                .ForMember(dest => dest.product,
-                           opt => opt.Ignore()) 
-                .ForMember(dest => dest.PID,
-                           opt => opt.Ignore())
-                .ForMember(dest => dest.OID,
-                           opt => opt.Ignore())
-                .ForMember(dest => dest.Order,
-                           opt => opt.Ignore());
-            //use .Ignore() => tell AutoMapper Don’t try to map these, I’ll set them manually in my service/ controller ...
+                .ForMember(d => d.Quantity, o => o.MapFrom(s => s.Quantity))
+                .ForMember(d => d.product, o => o.Ignore())
+                .ForMember(d => d.PID, o => o.Ignore())
+                .ForMember(d => d.OID, o => o.Ignore())
+                .ForMember(d => d.Order, o => o.Ignore());
+            // both PID/OID will be set in service/controller ...
 
-            // OrderProducts -> OrdersOutputOTD
+            // OrderProducts -> OrdersOutputOTD (per-item total) ...
             CreateMap<OrderProducts, OrdersOutputOTD>()
-                .ForMember(dest => dest.OrderDate,
-                           opt => opt.MapFrom(src => src.Order.OrderDate))
-                .ForMember(dest => dest.TotalAmount,
-                           opt => opt.MapFrom(src => src.Order.TotalAmount))
-                .ForMember(dest => dest.ProductName,
-                           opt => opt.MapFrom(src => src.product.ProductName))
-                .ForMember(dest => dest.Quantity,
-                           opt => opt.MapFrom(src => src.Quantity));
-            //we do not need ReverseMap() here because we won't map OrdersOutputOTD back to OrderProducts ...
-            // OrdersOutputOTD is only used for output purposes ...
-
+                .ForMember(d => d.OrderDate, o => o.MapFrom(s => s.Order.OrderDate))
+                .ForMember(d => d.ProductName, o => o.MapFrom(s => s.product.ProductName))
+                .ForMember(d => d.TotalAmount, o => o.MapFrom(s => s.Quantity * s.product.Price))
+                .ForMember(d => d.Quantity, o => o.MapFrom(s => s.Quantity));
+            // No ReverseMap() — output-only DTO ...
         }
     }
 }
