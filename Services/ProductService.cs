@@ -2,16 +2,19 @@
 using E_CommerceSystem.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
+using AutoMapper;
 
 namespace E_CommerceSystem.Services
 {
     public class ProductService : IProductService
     {
         private readonly IProductRepo _productRepo;
+        private readonly IMapper _mapper;
 
-        public ProductService(IProductRepo productRepo)
+        public ProductService(IProductRepo productRepo, IMapper mapper)
         {
             _productRepo = productRepo;
+            _mapper = mapper;
         }
 
 
