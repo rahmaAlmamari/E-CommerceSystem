@@ -1,4 +1,5 @@
-﻿using E_CommerceSystem.Models;
+﻿using AutoMapper;
+using E_CommerceSystem.Models;
 using E_CommerceSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,13 +10,15 @@ namespace E_CommerceSystem.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[Controller]")]
-    public class OrderController: ControllerBase
+    public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
+        private readonly IMapper _mapper;
 
-        public OrderController(IOrderService orderService)
+        public OrderController(IOrderService orderService, IMapper mapper)
         {
             _orderService = orderService;
+            _mapper = mapper;
         }
 
         [HttpPost("PlaceOrder")]
@@ -32,7 +35,7 @@ namespace E_CommerceSystem.Controllers
                 var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
                 // Decode the token to check user role
-                var userId= GetUserIdFromToken(token);
+                var userId = GetUserIdFromToken(token);
 
                 // Extract user ID 
                 int uid = int.Parse(userId);
@@ -45,10 +48,9 @@ namespace E_CommerceSystem.Controllers
             {
                 // Return a generic error response
                 return StatusCode(500, $"An error occurred while placing order. {(ex.Message)}");
-
             }
-
         }
+
         [HttpGet("GetAllOrders")]
         public IActionResult GetAllOrders()
         {
@@ -62,14 +64,19 @@ namespace E_CommerceSystem.Controllers
 
                 // Extract user ID 
                 int uid = int.Parse(userId);
-                
-                return Ok(_orderService.GetAllOrders(uid));
+
+                // Get all order products for the user
+                var orderProducts = _orderService.GetAllOrders(uid);
+
+                // map entities to DTOs instead of returning raw OrderProducts
+                var orderItems = _mapper.Map<IEnumerable<OrderItemDTO>>(orderProducts);
+
+                return Ok(orderItems);
             }
             catch (Exception ex)
             {
                 // Return a generic error response
                 return StatusCode(500, $"An error occurred while retrieving products. {(ex.Message)}");
-
             }
         }
 
@@ -87,13 +94,13 @@ namespace E_CommerceSystem.Controllers
                 // Extract user ID 
                 int uid = int.Parse(userId);
 
-                return Ok(_orderService.GetOrderById(OrderId,uid));
+                // Service already returns OrdersOutputOTD, no manual mapping needed here
+                return Ok(_orderService.GetOrderById(OrderId, uid));
             }
             catch (Exception ex)
             {
                 // Return a generic error response
                 return StatusCode(500, $"An error occurred while retrieving products. {(ex.Message)}");
-
             }
         }
 
@@ -109,13 +116,10 @@ namespace E_CommerceSystem.Controllers
                 // Extract the 'sub' claim
                 var subClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub");
 
-
                 return (subClaim?.Value); // Return both values as a tuple
             }
 
             throw new UnauthorizedAccessException("Invalid or unreadable token.");
         }
     }
-
-
 }
