@@ -1,4 +1,5 @@
-﻿using E_CommerceSystem.Models;
+﻿using AutoMapper;
+using E_CommerceSystem.Models;
 using E_CommerceSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
@@ -18,11 +19,13 @@ namespace E_CommerceSystem.Controllers
     {
         private readonly IProductService _productService;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
 
-        public ProductController(IProductService productService, IConfiguration configuration)
+        public ProductController(IProductService productService, IConfiguration configuration, IMapper mapper)
         {
             _productService = productService;
             _configuration = configuration;
+            _mapper = mapper;
         }
 
         [HttpPost("AddProduct")]
@@ -49,14 +52,18 @@ namespace E_CommerceSystem.Controllers
                 }
 
                 // Create a new product
-                var product = new Product
-                {
-                    ProductName = productInput.ProductName,
-                    Price = productInput.Price,
-                    Description = productInput.Description,
-                    Stock = productInput.Stock,
-                    OverallRating = 0
-                };
+                // var product = new Product
+                // {
+                //     ProductName = productInput.ProductName,
+                //     Price = productInput.Price,
+                //     Description = productInput.Description,
+                //     Stock = productInput.Stock,
+                //     OverallRating = 0
+                // };
+
+                // AutoMapper ProductDTO -> Product ...
+                var product = _mapper.Map<Product>(productInput);
+                product.OverallRating = 0; // keep your initial rating behavior
 
                 // Add the new product to the database/service layer
                 _productService.AddProduct(product);
@@ -91,12 +98,15 @@ namespace E_CommerceSystem.Controllers
                     return BadRequest("Product data is required.");
 
                 var product = _productService.GetProductById(productId);
-                
-                product.ProductName = productInput.ProductName;
-                product.Price = productInput.Price;
-                product.Description = productInput.Description;
-                product.Stock = productInput.Stock;
-                 
+
+                // product.ProductName = productInput.ProductName;
+                // product.Price = productInput.Price;
+                // product.Description = productInput.Description;
+                // product.Stock = productInput.Stock;
+
+                // AutoMapper replacement for manual mapping above ...
+                _mapper.Map(productInput, product);
+
                 _productService.UpdateProduct(product);
 
                 return Ok(product);
@@ -108,7 +118,7 @@ namespace E_CommerceSystem.Controllers
             }
         }
 
-       
+
         [AllowAnonymous]
         [HttpGet("GetAllProducts")]
         public IActionResult GetAllProducts(
@@ -171,8 +181,8 @@ namespace E_CommerceSystem.Controllers
                 var jwtToken = handler.ReadJwtToken(token);
 
                 // Extract the 'role' claim
-                var roleClaim = jwtToken.Claims.FirstOrDefault (c => c.Type == "role" || c.Type == "unique_name" );
-                
+                var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "role" || c.Type == "unique_name");
+
 
                 return roleClaim?.Value; // Return the role or null if not found
             }
