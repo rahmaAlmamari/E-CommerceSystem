@@ -41,8 +41,12 @@ namespace E_CommerceSystem
             // Add AutoMapper and scan for profiles ...
             builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+            //builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            //     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                    options.UseLazyLoadingProxies() //to enable lazy loading ...
+                    .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
             // Add JWT Authentication
             var jwtSettings = builder.Configuration.GetSection("JwtSettings");
