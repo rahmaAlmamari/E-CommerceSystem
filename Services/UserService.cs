@@ -1,15 +1,18 @@
 ﻿using E_CommerceSystem.Models;
 using E_CommerceSystem.Repositories;
+using AutoMapper;
 
 namespace E_CommerceSystem.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepo _userRepo;
+        private readonly IMapper _mapper;
 
-        public UserService(IUserRepo userRepo)
+        public UserService(IUserRepo userRepo, IMapper mapper)
         {
             _userRepo = userRepo;
+            _mapper = mapper;
         }
 
         public void AddUser(User user)
