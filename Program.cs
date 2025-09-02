@@ -38,6 +38,9 @@ namespace E_CommerceSystem
             //register supplier ...
             builder.Services.AddScoped<ISupplierRepo, SupplierRepo>();
 
+            // Add AutoMapper and scan for profiles ...
+            builder.Services.AddAutoMapper(typeof(MappingProfile));
+
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                  options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
