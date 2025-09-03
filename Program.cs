@@ -50,7 +50,7 @@ namespace E_CommerceSystem
 
             // Add JWT Authentication
             var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-            var secretKey = jwtSettings["SecretKey"];
+            var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JwtSettings:SecretKey is missing.");
 
             builder.Services.AddAuthentication(options =>
             {
@@ -74,13 +74,16 @@ namespace E_CommerceSystem
 
             builder.Services.AddSwaggerGen(c =>
             {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "E-Commerce API", Version = "v1" });
+                // Use HTTP Bearer so Swagger auto-prefixes "Bearer "
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme (Example: 'Bearer <token>')",
+                    Description = "Paste ONLY your JWT below. Swagger will add 'Bearer ' automatically.",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT"
                 });
 
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -94,7 +97,8 @@ namespace E_CommerceSystem
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            //new string[] {}
+            Array.Empty<string>()
         }
     });
             });
