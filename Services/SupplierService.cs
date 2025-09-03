@@ -3,7 +3,7 @@ using E_CommerceSystem.Repositories;
 
 namespace E_CommerceSystem.Services
 {
-    public class SupplierService
+    public class SupplierService : ISupplierService
     {
         private readonly ISupplierRepo _supplierRepo;
         public SupplierService(ISupplierRepo supplierRepo)
