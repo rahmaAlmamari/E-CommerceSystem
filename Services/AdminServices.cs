@@ -3,7 +3,7 @@
 using E_CommerceSystem.Repositories;
 namespace E_CommerceSystem.Services
 {
-    public class AdminServices 
+    public class AdminServices : IAdminServices
     {
         private readonly IOrderProductsRepo _orderProductsRepo;
         private readonly IOrderRepo _orderRepo;
@@ -36,21 +36,21 @@ namespace E_CommerceSystem.Services
             return bestselling;
         }
 
-        public IEnumerable <object> GetRevenuePerDay()
+        public IEnumerable<object> GetRevenuePerDay()
         {
-            var revenue=_orderRepo.GetAllOrders()
-                .GroupBy(o=>o.OrderDate.Date)
-                .Select(g=> new 
+            var revenue = _orderRepo.GetAllOrders()
+                .GroupBy(o => o.OrderDate.Date)
+                .Select(g => new
                 {
-                    Date=g.Key,
-                    TotalRevenue=g.Sum(o=>o.TotalAmount)
+                    Date = g.Key,
+                    TotalRevenue = g.Sum(o => o.TotalAmount)
                 })
                 .ToList();
             return revenue;
         }
-         public IEnumerable<object> GetRevenuePerMonth()
+        public IEnumerable<object> GetRevenuePerMonth()
         {
-            var revenue=_orderProductsRepo.GetAllOrders()
+            var revenue = _orderProductsRepo.GetAllOrders()
                 .GroupBy(op => new { op.Order.OrderDate.Year, op.Order.OrderDate.Month })
                 .Select(global => new
                 {
@@ -70,7 +70,7 @@ namespace E_CommerceSystem.Services
                     ProductId = g.Key,
                     _productRepo.GetProductById(g.Key)?.ProductName,
                     AverageRating = g.Average(r => r.Rating),
-                   
+
                 })
                 .OrderByDescending(x => x.AverageRating)
                 .Take(topN)
