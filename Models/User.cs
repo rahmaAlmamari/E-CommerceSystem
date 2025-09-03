@@ -36,5 +36,8 @@ namespace E_CommerceSystem.Models
         [JsonIgnore]
         public virtual ICollection<Review> Reviews { get; set; }
 
+        //for lazy loading ...
+        //protected User() { }
+
     }
 }

@@ -15,5 +15,8 @@ namespace E_CommerceSystem.Models
         public string Phone { get; set; }
 
         public virtual ICollection<Product> Products { get; set; }
+
+        //for lazy loading ...
+        //protected Supplier() { }
     }
 }

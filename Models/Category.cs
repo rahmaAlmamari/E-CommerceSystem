@@ -12,5 +12,8 @@ namespace E_CommerceSystem.Models
         public string Description { get; set; }
 
         public virtual ICollection<Product> Products { get; set; }
+
+        // for lazy loading ...
+        //protected Category() { }
     }
 }

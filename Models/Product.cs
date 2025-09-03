@@ -35,11 +35,14 @@ namespace E_CommerceSystem.Models
         [ForeignKey("Category")]
         public int CategoryId { get; set; }
         [JsonIgnore]
-        public Category Category { get; set; }
+        public virtual Category Category { get; set; }
 
         [ForeignKey("Supplier")]
         public int SupplierId { get; set; }
         [JsonIgnore]
-        public Supplier Supplier { get; set; }
+        public virtual Supplier Supplier { get; set; }
+
+        // for lazy loading ...
+        //protected Product() { }
     }
 }
