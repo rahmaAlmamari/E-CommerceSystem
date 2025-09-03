@@ -3,7 +3,7 @@ using E_CommerceSystem.Models;
 using E_CommerceSystem.Repositories;
 namespace E_CommerceSystem.Services
 {
-    public class OrderSummaryService
+    public class OrderSummaryService : IOrderSummaryService
     {
         private readonly IOrderRepo _orderRepo;
         private readonly IUserService _userService;
@@ -48,16 +48,16 @@ namespace E_CommerceSystem.Services
                     });
                 }
             }
-                return new OrderSummaryDTO
-                {
-                    OrderId = order.OID,
-                    OrderDate = order.OrderDate,
-                    TotalAmount = order.TotalAmount,
-                    UserName = user.UName,
-                    Email = user.Email,
-                    Products = productDetails
-                };
-            }
+            return new OrderSummaryDTO
+            {
+                OrderId = order.OID,
+                OrderDate = order.OrderDate,
+                TotalAmount = order.TotalAmount,
+                UserName = user.UName,
+                Email = user.Email,
+                Products = productDetails
+            };
         }
     }
+}
 
