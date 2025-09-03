@@ -39,5 +39,8 @@ namespace E_CommerceSystem.Models
         //for lazy loading ...
         //protected User() { }
 
+        public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+
+
     }
 }

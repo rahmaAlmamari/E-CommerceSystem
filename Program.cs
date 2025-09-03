@@ -35,8 +35,10 @@ namespace E_CommerceSystem
 
             //register category ...
             builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
             //register supplier ...
             builder.Services.AddScoped<ISupplierRepo, SupplierRepo>();
+            builder.Services.AddScoped<ISupplierService, SupplierService>();
 
             // Add AutoMapper and scan for profiles ...
             builder.Services.AddAutoMapper(typeof(MappingProfile));
@@ -66,6 +68,22 @@ namespace E_CommerceSystem
                             ValidateLifetime = true, // Ensures the token hasn't expired.
                             ValidateIssuerSigningKey = true, // Ensures the token is properly signed.
                             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)) // Match with your token generation key.
+                        };
+                        // Read token from cookie if Authorization header is missing
+                        options.Events = new JwtBearerEvents
+                        {
+                            OnMessageReceived = context =>
+                            {
+                                if (string.IsNullOrEmpty(context.Token))
+                                {
+                                    var cookieToken = context.Request.Cookies["access_token"];
+                                    if (!string.IsNullOrEmpty(cookieToken))
+                                    {
+                                        context.Token = cookieToken;
+                                    }
+                                }
+                                return Task.CompletedTask;
+                            }
                         };
                     });
 
