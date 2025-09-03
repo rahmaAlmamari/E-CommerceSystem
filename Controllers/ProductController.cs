@@ -29,12 +29,17 @@ namespace E_CommerceSystem.Controllers
         }
 
         [HttpPost("AddProduct")]
-        public IActionResult AddNewProduct(ProductDTO productInput)
+        public IActionResult AddNewProduct(ProductDTO productInput, int sid, int cid)
         {
             try
             {
                 // Retrieve the Authorization header from the request
-                var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                //var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var auth = Request.Headers.Authorization.ToString();
+                var token = auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                    ? auth.Substring("Bearer ".Length).Trim()
+                    : auth;
+
 
                 // Decode the token to check user role
                 var userRole = GetUserRoleFromToken(token);
@@ -64,6 +69,8 @@ namespace E_CommerceSystem.Controllers
                 // AutoMapper ProductDTO -> Product ...
                 var product = _mapper.Map<Product>(productInput);
                 product.OverallRating = 0; // keep your initial rating behavior
+                product.SupplierId = sid;
+                product.CategoryId = cid;
 
                 // Add the new product to the database/service layer
                 _productService.AddProduct(product);
