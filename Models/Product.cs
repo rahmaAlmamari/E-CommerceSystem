@@ -42,6 +42,8 @@ namespace E_CommerceSystem.Models
         [JsonIgnore]
         public virtual Supplier Supplier { get; set; }
 
+        // Image URL property
+        public string? ImageUrl { get; set; }
         // for lazy loading ...
         //protected Product() { }
     }
