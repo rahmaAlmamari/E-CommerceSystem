@@ -39,6 +39,8 @@ namespace E_CommerceSystem
             //register supplier ...
             builder.Services.AddScoped<ISupplierRepo, SupplierRepo>();
             builder.Services.AddScoped<ISupplierService, SupplierService>();
+            
+            builder.Services.AddScoped<IAdminServices, AdminServices>();
 
             // Add AutoMapper and scan for profiles ...
             builder.Services.AddAutoMapper(typeof(MappingProfile));

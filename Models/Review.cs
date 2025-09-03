@@ -29,6 +29,9 @@ namespace E_CommerceSystem.Models
         [JsonIgnore]
         public virtual Product product { get; set; }
 
+        // Added RowVersion property to handle optimistic concurrency
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
         //for lazy loading ...
         //protected Review() { }
     }

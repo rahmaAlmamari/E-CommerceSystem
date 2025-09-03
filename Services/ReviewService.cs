@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using E_CommerceSystem.Models;
 using E_CommerceSystem.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace E_CommerceSystem.Services
 {
@@ -97,8 +98,18 @@ namespace E_CommerceSystem.Services
             // Map incoming ReviewDTO onto the existing Review (AutoMapper) ...
             _mapper.Map(reviewDTO, review);
             review.ReviewDate = DateTime.Now;
-
-            _reviewRepo.UpdateReview(review);
+            // Wrapped update operation in try/catch to handle concurrency conflicts
+            try
+            {
+                _reviewRepo.UpdateReview(review);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                // Throw custom exception if another user modified the same review
+                throw new InvalidOperationException("The review was modified by another process. Please reload and try again.");
+            }
+           
+            //_reviewRepo.UpdateReview(review);
 
             // Fix: pass PID, not rating ...
             RecalculateProductRating(review.PID);
