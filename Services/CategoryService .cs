@@ -35,6 +35,14 @@ namespace E_CommerceSystem.Services
             //check if category with same name already exists
             _categoryRepo.AddCategory(category);
         }
+        public void UpdateCategory(Category category)
+        {
+            _categoryRepo.UpdateCategory(category);
+        }
+        public void DeleteCategory(int cid)
+        {
+            _categoryRepo.DeleteCategory(cid);
+        }
     }
 
 }
