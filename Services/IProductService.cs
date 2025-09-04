@@ -9,5 +9,7 @@ namespace E_CommerceSystem.Services
         Product GetProductById(int pid);
         void UpdateProduct(Product product);
         Product GetProductByName(string productName);
+
+        string SaveProductImage(int pid, IFormFile imageFile);
     }
 }
