@@ -6,23 +6,24 @@ namespace E_CommerceSystem.Models
     public class UserDTO
     {
        
-        [Required]
+        [Required, MaxLength(100)]
         public string UName { get; set; }
 
-        [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$",
-        ErrorMessage = "Invalid email format.(e.g 'example@gmail.com')")]
+        [Required]
+        [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", ErrorMessage = "Invalid email format.(e.g 'example@gmail.com')")]
         public string Email { get; set; }
 
+
         [Required]
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$",
-        ErrorMessage = "Password must be at least 8 characters long, contain at least one uppercase letter," +
-            " one lowercase letter, one digit")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
+         ErrorMessage = "Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")]
         public string Password { get; set; }
 
-        [Required]
+
+        [Required, MaxLength(8)]
         public string Phone { get; set; }
 
-        [Required]
+        [Required, MaxLength(50)]
         public string Role { get; set; }
 
     }
