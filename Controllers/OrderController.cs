@@ -14,11 +14,13 @@ namespace E_CommerceSystem.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly IMapper _mapper;
-
-        public OrderController(IOrderService orderService, IMapper mapper)
+        private readonly IInvoiceService _invoiceService;
+        public OrderController(IOrderService orderService, IMapper mapper, IInvoiceService invoiceService)
         {
             _orderService = orderService;
             _mapper = mapper;
+            _invoiceService = invoiceService;
+
         }
 
         [HttpPost("PlaceOrder")]
@@ -121,5 +123,36 @@ namespace E_CommerceSystem.Controllers
 
             throw new UnauthorizedAccessException("Invalid or unreadable token.");
         }
+
+
+        [HttpGet("GetInvoice/{OrderId}")]
+        public IActionResult GetInvoice(int OrderId)
+        {
+            try
+            {
+                // Get user id from token
+                var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var userId = GetUserIdFromToken(token);
+                int uid = int.Parse(userId);
+
+                // Get order
+                var order = _orderService.GetOrderByUserId(uid).FirstOrDefault(o => o.OID == OrderId);
+                if (order == null)
+                    return NotFound($"Order with ID {OrderId} not found for this user.");
+
+                // Generate invoice PDF
+                var pdfBytes = _invoiceService.GenerateInvoice(order);
+
+                // Return file as PDF download
+                return File(pdfBytes, "application/pdf", $"Invoice_Order_{OrderId}.pdf");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while generating invoice. {ex.Message}");
+            }
+
+        }
     }
 }
+
+
