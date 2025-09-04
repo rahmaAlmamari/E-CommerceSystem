@@ -33,21 +33,11 @@ namespace E_CommerceSystem.Controllers
         {
             try
             {
-                // Retrieve the Authorization header from the request
-                //var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                var auth = Request.Headers.Authorization.ToString();
-                var token = auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
-                    ? auth.Substring("Bearer ".Length).Trim()
-                    : auth;
-
-
-                // Decode the token to check user role
-                var userRole = GetUserRoleFromToken(token);
-
                 // Only allow Admin users to add products
-                if (userRole != "admin")
+                if (!User.IsInRole("admin"))
                 {
-                    return BadRequest("You are not authorized to perform this action.");
+                    // You are authenticated but not allowed
+                    return Forbid(); // better than BadRequest for authorization
                 }
 
                 // Check if input data is null
@@ -55,16 +45,6 @@ namespace E_CommerceSystem.Controllers
                 {
                     return BadRequest("Product data is required.");
                 }
-
-                // Create a new product
-                // var product = new Product
-                // {
-                //     ProductName = productInput.ProductName,
-                //     Price = productInput.Price,
-                //     Description = productInput.Description,
-                //     Stock = productInput.Stock,
-                //     OverallRating = 0
-                // };
 
                 // AutoMapper ProductDTO -> Product ...
                 var product = _mapper.Map<Product>(productInput);
@@ -89,16 +69,10 @@ namespace E_CommerceSystem.Controllers
         {
             try
             {
-                // Retrieve the Authorization header from the request
-                var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
-                // Decode the token to check user role
-                var userRole = GetUserRoleFromToken(token);
-
                 // Only allow Admin users to add products
-                if (userRole != "admin")
+                if (!User.IsInRole("admin"))
                 {
-                    return BadRequest("You are not authorized to perform this action.");
+                    return Forbid();
                 }
 
                 if (productInput == null)
@@ -106,12 +80,7 @@ namespace E_CommerceSystem.Controllers
 
                 var product = _productService.GetProductById(productId);
 
-                // product.ProductName = productInput.ProductName;
-                // product.Price = productInput.Price;
-                // product.Description = productInput.Description;
-                // product.Stock = productInput.Stock;
-
-                // AutoMapper replacement for manual mapping above ...
+                // AutoMapper replacement for manual mapping ...
                 _mapper.Map(productInput, product);
 
                 _productService.UpdateProduct(product);
@@ -124,6 +93,7 @@ namespace E_CommerceSystem.Controllers
                 return StatusCode(500, $"An error occurred while updte product. {(ex.Message)}");
             }
         }
+
 
 
         [AllowAnonymous]
