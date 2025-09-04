@@ -41,7 +41,7 @@ namespace E_CommerceSystem.Repositories
             try
             {
                 //Hash the password before saving
-                user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password); 
+                //user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password); 
                 _context.Users.Add(user);
                 _context.SaveChanges();
             }
