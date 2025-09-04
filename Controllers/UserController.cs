@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http; //for CookieOptions ...
 using Microsoft.Extensions.Options;//for IOptions<JwtSettings> ...
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using E_CommerceSystem.Auth;
 
 namespace E_CommerceSystem.Controllers
 {
@@ -45,6 +46,15 @@ namespace E_CommerceSystem.Controllers
                 //AutoMapper to map UserDTO to User ...
                 var user = _mapper.Map<User>(InputUser);
                 user.CreatedAt = DateTime.UtcNow;
+                // Set default role if not provided ...
+                var normalizedRole = string.IsNullOrWhiteSpace(user.Role)
+                 ? Roles.Customer
+                 : user.Role.Trim().ToLowerInvariant();
+
+                if (normalizedRole != Roles.Customer && normalizedRole != Roles.Manager && normalizedRole != Roles.Admin)
+                    return BadRequest("Invalid role. Allowed: admin, manager, customer.");
+
+                user.Role = normalizedRole;
 
                 // === Added: hash the incoming plain-text password from DTO before saving ===
                 // Make sure your UserDTO includes a Password field coming from the request.
