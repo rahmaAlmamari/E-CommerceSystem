@@ -47,6 +47,9 @@ namespace E_CommerceSystem
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
 
+            //register EmailService ...
+            builder.Services.AddScoped<IEmailService, EmailService>();
+
 
             // Add AutoMapper and scan for profiles ...
             builder.Services.AddAutoMapper(typeof(MappingProfile));
