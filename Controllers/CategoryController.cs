@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using E_CommerceSystem.Models;
 using E_CommerceSystem.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace E_CommerceSystem.Controllers
 {
+    [Authorize(Policy = "AdminOrManager")]
     [ApiController]
     [Route("api/[controller]")] 
     public class CategoriesController : ControllerBase
