@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using E_CommerceSystem.Auth;
 
 namespace E_CommerceSystem
 {
@@ -134,6 +135,16 @@ namespace E_CommerceSystem
                     }
                 });
             });
+
+            //to enable Role-based Authorization ...
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminOnly", p => p.RequireRole(Roles.Admin));
+                options.AddPolicy("ManagerOnly", p => p.RequireRole(Roles.Manager));
+                options.AddPolicy("CustomerOnly", p => p.RequireRole(Roles.Customer));
+                options.AddPolicy("AdminOrManager", p => p.RequireRole(Roles.Admin, Roles.Manager));
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
