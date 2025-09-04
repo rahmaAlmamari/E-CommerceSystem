@@ -10,17 +10,24 @@ namespace E_CommerceSystem.Services
         private readonly IProductService _productService;
         private readonly IOrderProductsService _orderProductsService;
         private readonly IMapper _mapper;
+        private readonly IUserService _userService; // inject user service to get user email ...
+        private readonly IEmailService _emailService;// inject email service ...
 
         public OrderService(
             IOrderRepo orderRepo,
             IProductService productService,
             IOrderProductsService orderProductsService,
-            IMapper mapper)
+            IMapper mapper,
+            IEmailService emailService,// inject email service ...
+            IUserService userService
+            )
         {
             _orderRepo = orderRepo;
             _productService = productService;
             _orderProductsService = orderProductsService;
             _mapper = mapper;
+            _emailService = emailService;// inject email service ...
+            _userService = userService;
         }
 
         // get all orders for login user ...
@@ -139,6 +146,13 @@ namespace E_CommerceSystem.Services
             // Update order total
             order.TotalAmount = totalOrderPrice;
             UpdateOrder(order);
+
+            var user = _userService.GetUserById(uid);
+            if (user != null)
+            {
+                _emailService.SendEmail(user.Email, "Order Confirmation",
+                    $"Your order with ID {order.OID} has been placed successfully on {order.OrderDate}. Total Amount: {order.TotalAmount:C}");
+            }
         }
 
         public void CancelOrder(int oid, int uid)
@@ -164,6 +178,13 @@ namespace E_CommerceSystem.Services
             //delete the order after restoring stock
             _orderRepo.DeleteOrder(oid);
 
-        }
+            var user = _userService.GetUserById(uid);
+            if (user != null)
+            {
+                _emailService.SendEmail(user.Email, "Order Cancellation",
+                    $"Your order with ID {order.OID} has been cancelled successfully. If you have already been charged, a refund will be processed shortly.");
+            }
+
+            }
     }
 }
