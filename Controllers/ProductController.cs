@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using E_CommerceSystem.Auth;
 
 namespace E_CommerceSystem.Controllers
 {
@@ -28,6 +29,7 @@ namespace E_CommerceSystem.Controllers
             _mapper = mapper;
         }
 
+        [Authorize(Policy = "AdminOrManager")]
         [HttpPost("AddProduct")]
         public IActionResult AddNewProduct(ProductDTO productInput, int sid, int cid)
         {
@@ -64,6 +66,7 @@ namespace E_CommerceSystem.Controllers
             }
         }
 
+        [Authorize(Policy = "AdminOrManager")]
         [HttpPut("UpdateProduct/{productId}")]
         public IActionResult UpdateProduct(int productId, ProductDTO productInput)
         {
@@ -93,8 +96,6 @@ namespace E_CommerceSystem.Controllers
                 return StatusCode(500, $"An error occurred while updte product. {(ex.Message)}");
             }
         }
-
-
 
         [AllowAnonymous]
         [HttpGet("GetAllProducts")]
