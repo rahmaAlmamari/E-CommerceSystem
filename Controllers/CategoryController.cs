@@ -15,14 +15,14 @@ namespace E_CommerceSystem.Controllers
             _categoryService = categoryService;
         }
 
-        [HttpGet]
+        [HttpGet("GetAllCategories")]
         public IActionResult GetAllCategories()
         {
             var categories = _categoryService.GetAllCategory();
             return Ok(categories);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("GetCategoryById/{id:int}")]
         public IActionResult GetCategoryById(int id)
         {
             var category = _categoryService.GetCategoryById(id);
@@ -31,7 +31,7 @@ namespace E_CommerceSystem.Controllers
             return Ok(category);
         }
 
-        [HttpGet("by-name/{name}")]
+        [HttpGet("GetCategoryByName/{name}")]
         public IActionResult GetCategoryByName(string name)
         {
             var category = _categoryService.GetCategoryByName(name);
@@ -40,7 +40,7 @@ namespace E_CommerceSystem.Controllers
             return Ok(category);
         }
 
-        [HttpPost]
+        [HttpPost("AddCategory")]
         public IActionResult AddCategory([FromBody] Category category)
         {
             if (category == null || string.IsNullOrWhiteSpace(category.Name))
@@ -52,7 +52,7 @@ namespace E_CommerceSystem.Controllers
                                    category);
         }
 
-        [HttpPut("{id:int}")]
+        [HttpPut("UpdateCategory/{id:int}")]
         public IActionResult UpdateCategory(int id, [FromBody] Category category)
         {
             if (category == null || category.CategoryId != id)
@@ -68,7 +68,7 @@ namespace E_CommerceSystem.Controllers
             return Ok(existing);
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("DeleteCategory/{id:int}")]
         public IActionResult DeleteCategory(int id)
         {
             var existing = _categoryService.GetCategoryById(id);
