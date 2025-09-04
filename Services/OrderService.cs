@@ -140,5 +140,30 @@ namespace E_CommerceSystem.Services
             order.TotalAmount = totalOrderPrice;
             UpdateOrder(order);
         }
+
+        public void CancelOrder(int oid, int uid)
+        {
+            //check if order exists and belongs to the user
+            var order = _orderRepo.GetOrderById(oid);
+            if (order == null)
+                throw new KeyNotFoundException($"Order with ID {oid} not found.");
+            //ensure the order belongs to the user
+            if (order.UID != uid)
+                throw new UnauthorizedAccessException("You cannot cancel someone else's order.");
+            //get all proudect associated with the order
+            var orderProducts = _orderProductsService.GetOrdersByOrderId(oid);
+            if(orderProducts == null || !orderProducts.Any())
+                throw new InvalidOperationException("This order has no products to cancel.");
+            //retore proudect stock for each item in the order
+            foreach (var op in orderProducts)
+            {
+                var prouct = _productService.GetProductById(op.PID);
+                prouct.Stock += op.Quantity; // Restock the product
+                _productService.UpdateProduct(prouct);
+            }
+            //delete the order after restoring stock
+            _orderRepo.DeleteOrder(oid);
+
+        }
     }
 }
