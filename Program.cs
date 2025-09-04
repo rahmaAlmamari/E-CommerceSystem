@@ -8,6 +8,10 @@ using System.Text;
 using E_CommerceSystem.Auth;
 using E_CommerceSystem.Middleware;
 
+// --- Serilog usings (ADDED) ---
+using Serilog;
+using Serilog.Exceptions;
+
 namespace E_CommerceSystem
 {
     public class Program
@@ -15,6 +19,16 @@ namespace E_CommerceSystem
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // --- Serilog bootstrap (ADDED): reads Serilog config from appsettings.json ---
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(builder.Configuration)
+                .Enrich.WithExceptionDetails()
+                .CreateLogger();
+
+            // replace default logging with Serilog (ADDED)
+            builder.Host.UseSerilog();
+
             builder.Services.AddControllers();
 
             // Add services to the container.
@@ -102,6 +116,24 @@ namespace E_CommerceSystem
                             }
                         }
                         return Task.CompletedTask;
+                    },
+
+                    // --- Serilog auth diagnostics (ADDED) ---
+                    OnAuthenticationFailed = ctx =>
+                    {
+                        Log.Warning(ctx.Exception, "JWT authentication failed for path {Path}", ctx.Request.Path);
+                        return Task.CompletedTask;
+                    },
+                    OnChallenge = ctx =>
+                    {
+                        Log.Information("JWT challenge issued for path {Path}", ctx.Request.Path);
+                        return Task.CompletedTask;
+                    },
+                    OnForbidden = ctx =>
+                    {
+                        Log.Information("JWT forbidden for user {User} on {Path}",
+                            ctx.Principal?.Identity?.Name ?? "unknown", ctx.Request.Path);
+                        return Task.CompletedTask;
                     }
                 };
             });
@@ -150,6 +182,30 @@ namespace E_CommerceSystem
             });
 
             var app = builder.Build();
+
+            // --- Per-request enrichment for logs (ADDED) ---
+            app.Use(async (ctx, next) =>
+            {
+                var userId = ctx.User?.FindFirst("uid")?.Value
+                             ?? ctx.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                using (Serilog.Context.LogContext.PushProperty("UserId", userId ?? "anonymous"))
+                using (Serilog.Context.LogContext.PushProperty("CorrelationId", ctx.TraceIdentifier))
+                {
+                    await next();
+                }
+            });
+
+            // --- Request logging (ADDED) ---
+            app.UseSerilogRequestLogging(opts =>
+            {
+                opts.MessageTemplate = "Handled {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+                opts.EnrichDiagnosticContext = (diag, http) =>
+                {
+                    diag.Set("ClientIP", http.Connection.RemoteIpAddress?.ToString());
+                    diag.Set("UserAgent", http.Request.Headers.UserAgent.ToString());
+                };
+            });
 
             //to enable custom error handling middleware ...
             app.UseMiddleware<ErrorHandlingMiddleware>();
