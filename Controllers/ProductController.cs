@@ -36,11 +36,11 @@ namespace E_CommerceSystem.Controllers
             try
             {
                 // Only allow Admin users to add products
-                if (!User.IsInRole("admin"))
-                {
-                    // You are authenticated but not allowed
-                    return Forbid(); // better than BadRequest for authorization
-                }
+                //if (!User.IsInRole("admin"))
+                //{
+                //    // You are authenticated but not allowed
+                //    return Forbid(); // better than BadRequest for authorization
+                //}
 
                 // Check if input data is null
                 if (productInput == null)
