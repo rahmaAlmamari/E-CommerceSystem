@@ -33,8 +33,8 @@ namespace E_CommerceSystem.Controllers
         [HttpPost("AddProduct")]
         public IActionResult AddNewProduct(ProductDTO productInput, int sid, int cid)
         {
-            try
-            {
+            //try
+            //{
                 // Only allow Admin users to add products
                 //if (!User.IsInRole("admin"))
                 //{
@@ -45,7 +45,8 @@ namespace E_CommerceSystem.Controllers
                 // Check if input data is null
                 if (productInput == null)
                 {
-                    return BadRequest("Product data is required.");
+                    // return BadRequest("Product data is required.");
+                    throw new AppException("Product data is required.", 400, "VALIDATION_ERROR");
                 }
 
                 // AutoMapper ProductDTO -> Product ...
@@ -58,28 +59,30 @@ namespace E_CommerceSystem.Controllers
                 _productService.AddProduct(product);
 
                 return Ok(product);
-            }
-            catch (Exception ex)
-            {
-                // Return a generic error response
-                return StatusCode(500, $"An error occurred while adding the product: {ex.Message}");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    // Return a generic error response
+            //    // return StatusCode(500, $"An error occurred while adding the product: {ex.Message}");
+            //    throw; // let the ErrorHandlingMiddleware return a consistent 500 response
+            //}
         }
 
         [Authorize(Policy = "AdminOrManager")]
         [HttpPut("UpdateProduct/{productId}")]
         public IActionResult UpdateProduct(int productId, ProductDTO productInput)
         {
-            try
-            {
-                // Only allow Admin users to add products
-                if (!User.IsInRole("admin"))
-                {
-                    return Forbid();
-                }
+            //try
+            //{
+            //    // Only allow Admin users to add products
+            //    if (!User.IsInRole("admin"))
+            //    {
+            //        return Forbid();
+            //    }
 
                 if (productInput == null)
-                    return BadRequest("Product data is required.");
+                    // return BadRequest("Product data is required.");
+                    throw new AppException("Product data is required.", 400, "VALIDATION_ERROR");
 
                 var product = _productService.GetProductById(productId);
 
@@ -89,12 +92,13 @@ namespace E_CommerceSystem.Controllers
                 _productService.UpdateProduct(product);
 
                 return Ok(product);
-            }
-            catch (Exception ex)
-            {
-                // Return a generic error response
-                return StatusCode(500, $"An error occurred while updte product. {(ex.Message)}");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    // Return a generic error response
+            //    // return StatusCode(500, $"An error occurred while updte product. {(ex.Message)}");
+            //    throw; // centralized middleware will handle 500
+            //}
         }
 
         [AllowAnonymous]
@@ -106,12 +110,13 @@ namespace E_CommerceSystem.Controllers
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
         {
-            try
-            {
+            //try
+            //{
                 // Validate pagination parameters
                 if (pageNumber < 1 || pageSize < 1)
                 {
-                    return BadRequest("PageNumber and PageSize must be greater than 0.");
+                    // return BadRequest("PageNumber and PageSize must be greater than 0.");
+                    throw new AppException("PageNumber and PageSize must be greater than 0.", 400, "VALIDATION_ERROR");
                 }
 
                 // Call the service to get the paged and filtered products
@@ -119,36 +124,39 @@ namespace E_CommerceSystem.Controllers
 
                 if (products == null || !products.Any())
                 {
-                    return NotFound("No products found matching the given criteria.");
+                    // return NotFound("No products found matching the given criteria.");
+                    throw new AppException("No products found matching the given criteria.", 404, "NOT_FOUND");
                 }
 
                 return Ok(products);
-            }
-            catch (Exception ex)
-            {
-                // Return a generic error response
-                return StatusCode(500, $"An error occurred while retrieving products. {ex.Message}");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    // Return a generic error response
+            //    // return StatusCode(500, $"An error occurred while retrieving products. {ex.Message}");
+            //    throw; // centralized middleware will handle 500
+            //}
         }
 
         [AllowAnonymous]
         [HttpGet("GetProductByID/{ProductId}")]
         public IActionResult GetProductById(int ProductId)
         {
-            try
-            {
+            //try
+            //{
                 var product = _productService.GetProductById(ProductId);
                 if (product == null)
-                    return NotFound("No product found.");
+                    // return NotFound("No product found.");
+                    throw new AppException("No product found.", 404, "NOT_FOUND");
 
                 return Ok(product);
-            }
-            catch (Exception ex)
-            {
-                // Return a generic error response
-                return StatusCode(500, $"An error occurred while retrieving product. {(ex.Message)}");
-
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    // Return a generic error response
+            //    // return StatusCode(500, $"An error occurred while retrieving product. {(ex.Message)}");
+            //    throw; // centralized middleware will handle 500
+            //}
         }
         private string? GetUserRoleFromToken(string token)
         {
@@ -171,20 +179,22 @@ namespace E_CommerceSystem.Controllers
         [HttpPost("UploadProductImage/{productId}")]
         public IActionResult UploadProductImage(int productId, IFormFile imageFile)
         {
-            try
-            {
+            //try
+            //{
                 if (imageFile == null || imageFile.Length == 0)
 
-                    return BadRequest("No file uploaded.");
+                    // return BadRequest("No file uploaded.");
+                    throw new AppException("No file uploaded.", 400, "VALIDATION_ERROR");
                 //call servervice method to save image
                 var imageUrl = _productService.SaveProductImage(productId, imageFile);
 
                 return Ok(new { Message = "Image uploaded successfully.", ImageUrl = imageUrl });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred while uploading the image. {ex.Message}");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    // return StatusCode(500, $"An error occurred while uploading the image. {ex.Message}");
+            //    throw; // centralized middleware will handle 500
+            //}
         }
     }
 }
