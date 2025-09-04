@@ -8,9 +8,10 @@ namespace E_CommerceSystem.Models
         [Key]
         public int UID { get; set; }
 
-        [Required]
+        [Required, MaxLength(100)]
         public string UName { get; set; }
 
+        [Required, MaxLength(256)]
         [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$",
         ErrorMessage = "Invalid email format.(e.g 'example@gmail.com')")]
         public string Email { get; set; }
@@ -22,10 +23,10 @@ namespace E_CommerceSystem.Models
             " one lowercase letter, one digit, and one special character.")]
         public string Password { get; set; }
 
-        [Required]
+        [Required, MaxLength(8)]
         public string Phone {  get; set; }
 
-        [Required]
+        [Required, MaxLength(50)]
         public string Role { get; set; }
 
         public DateTime CreatedAt { get; set; }

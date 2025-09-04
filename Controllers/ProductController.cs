@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using E_CommerceSystem.Auth;
 
 namespace E_CommerceSystem.Controllers
 {
@@ -28,43 +29,24 @@ namespace E_CommerceSystem.Controllers
             _mapper = mapper;
         }
 
+        [Authorize(Policy = "AdminOrManager")]
         [HttpPost("AddProduct")]
         public IActionResult AddNewProduct(ProductDTO productInput, int sid, int cid)
         {
             try
             {
-                // Retrieve the Authorization header from the request
-                //var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                var auth = Request.Headers.Authorization.ToString();
-                var token = auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
-                    ? auth.Substring("Bearer ".Length).Trim()
-                    : auth;
-
-
-                // Decode the token to check user role
-                var userRole = GetUserRoleFromToken(token);
-
                 // Only allow Admin users to add products
-                if (userRole != "admin")
-                {
-                    return BadRequest("You are not authorized to perform this action.");
-                }
+                //if (!User.IsInRole("admin"))
+                //{
+                //    // You are authenticated but not allowed
+                //    return Forbid(); // better than BadRequest for authorization
+                //}
 
                 // Check if input data is null
                 if (productInput == null)
                 {
                     return BadRequest("Product data is required.");
                 }
-
-                // Create a new product
-                // var product = new Product
-                // {
-                //     ProductName = productInput.ProductName,
-                //     Price = productInput.Price,
-                //     Description = productInput.Description,
-                //     Stock = productInput.Stock,
-                //     OverallRating = 0
-                // };
 
                 // AutoMapper ProductDTO -> Product ...
                 var product = _mapper.Map<Product>(productInput);
@@ -84,21 +66,16 @@ namespace E_CommerceSystem.Controllers
             }
         }
 
+        [Authorize(Policy = "AdminOrManager")]
         [HttpPut("UpdateProduct/{productId}")]
         public IActionResult UpdateProduct(int productId, ProductDTO productInput)
         {
             try
             {
-                // Retrieve the Authorization header from the request
-                var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
-                // Decode the token to check user role
-                var userRole = GetUserRoleFromToken(token);
-
                 // Only allow Admin users to add products
-                if (userRole != "admin")
+                if (!User.IsInRole("admin"))
                 {
-                    return BadRequest("You are not authorized to perform this action.");
+                    return Forbid();
                 }
 
                 if (productInput == null)
@@ -106,12 +83,7 @@ namespace E_CommerceSystem.Controllers
 
                 var product = _productService.GetProductById(productId);
 
-                // product.ProductName = productInput.ProductName;
-                // product.Price = productInput.Price;
-                // product.Description = productInput.Description;
-                // product.Stock = productInput.Stock;
-
-                // AutoMapper replacement for manual mapping above ...
+                // AutoMapper replacement for manual mapping ...
                 _mapper.Map(productInput, product);
 
                 _productService.UpdateProduct(product);
@@ -124,7 +96,6 @@ namespace E_CommerceSystem.Controllers
                 return StatusCode(500, $"An error occurred while updte product. {(ex.Message)}");
             }
         }
-
 
         [AllowAnonymous]
         [HttpGet("GetAllProducts")]

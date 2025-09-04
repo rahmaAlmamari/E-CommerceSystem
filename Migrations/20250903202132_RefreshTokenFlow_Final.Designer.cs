@@ -4,6 +4,7 @@ using E_CommerceSystem;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace E_CommerceSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250903202132_RefreshTokenFlow_Final")]
+    partial class RefreshTokenFlow_Final
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -278,10 +281,8 @@ namespace E_CommerceSystem.Migrations
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("customer");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("UName")
                         .IsRequired()
@@ -293,10 +294,7 @@ namespace E_CommerceSystem.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users", t =>
-                        {
-                            t.HasCheckConstraint("CK_User_Role", "[Role] IN ('admin','manager','customer')");
-                        });
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("E_CommerceSystem.Models.Order", b =>
