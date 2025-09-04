@@ -196,5 +196,24 @@ namespace E_CommerceSystem.Controllers
 
             throw new UnauthorizedAccessException("Invalid or unreadable token.");
         }
+
+        [HttpPost("UploadProductImage/{productId}")]
+        public IActionResult UploadProductImage(int productId, IFormFile imageFile)
+        {
+            try
+            {
+                if (imageFile == null || imageFile.Length == 0)
+
+                    return BadRequest("No file uploaded.");
+                //call servervice method to save image
+                var imageUrl = _productService.SaveProductImage(productId, imageFile);
+
+                return Ok(new { Message = "Image uploaded successfully.", ImageUrl = imageUrl });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while uploading the image. {ex.Message}");
+            }
+        }
     }
 }
