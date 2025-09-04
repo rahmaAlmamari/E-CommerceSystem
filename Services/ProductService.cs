@@ -78,5 +78,31 @@ namespace E_CommerceSystem.Services
                 throw new KeyNotFoundException($"Product with Nmae {productName} not found.");
             return product;
         }
+
+        public string SaveProductImage(int pid,IFormFile imageFile)
+        {
+            var product = _productRepo.GetProductById(pid);
+            if(product==null)
+                throw new KeyNotFoundException($"Product with ID {pid} not found.");
+
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "products");
+            if(!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var FileName = $"{Guid.NewGuid()}_{imageFile.FileName}";
+            var filePath = Path.Combine(uploadsFolder, FileName);
+
+            using (var Strem = new FileStream(filePath, FileMode.Create))
+            {
+                imageFile.CopyTo(Strem);
+            }
+
+            product.ImageUrl = $"/products/{FileName}";
+            _productRepo.UpdateProduct(product);
+
+            return product.ImageUrl;
+        }
     }
 }
