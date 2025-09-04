@@ -32,6 +32,15 @@ namespace E_CommerceSystem
             modelBuilder.Entity<User>()
             .Property(u => u.CreatedAt)
             .HasDefaultValueSql("GETUTCDATE()");
+            //to set default value for user role ...
+            modelBuilder.Entity<User>()
+            .Property(u => u.Role)
+            .HasDefaultValue("customer");
+            //to add constraint to user role ...
+            modelBuilder.Entity<User>()
+                .HasCheckConstraint("CK_User_Role",
+                    "[Role] IN ('admin','manager','customer')");
+
 
             //===============Supplier========================
             //to set Unique ContactEmail for Supplier ...
