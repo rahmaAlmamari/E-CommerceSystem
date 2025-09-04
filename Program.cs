@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using E_CommerceSystem.Auth;
+using E_CommerceSystem.Middleware;
 
 namespace E_CommerceSystem
 {
@@ -149,6 +150,9 @@ namespace E_CommerceSystem
             });
 
             var app = builder.Build();
+
+            //to enable custom error handling middleware ...
+            app.UseMiddleware<ErrorHandlingMiddleware>();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
